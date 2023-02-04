@@ -7,6 +7,7 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [stop, setStop] = useState(null);
 
   async function fetchMoviesHandler() {
     setIsLoading(true);
@@ -25,22 +26,33 @@ function App() {
           releaseDate: moviesData.release_date,
         };
       });
+      console.log("fetching");
       setMovies(transformedMovies);
     } catch (error) {
       setError(error.message);
+      const cleanInterval = setInterval(async () => {
+        await fetch("https://swapi.dev/api/film/");
+      }, 5000);
+      setStop(cleanInterval);
     }
+
     setIsLoading(false);
   }
-    let content = <p>Found no Movies</p>;
-    if(movies.length > 0) {
-      content = <MoviesList movies={movies} />
-    }
-    if(error) {
-      content = <p>{error}</p>
-    }
-    if(isLoading) {
-      content = <p>Loading...</p>
-    }
+  const stopFetching = () => {
+    console.log('Stopped')
+    clearInterval(stop);
+  };
+
+  let content = <p>Found no Movies</p>;
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />;
+  }
+  if (error) {
+    content = <p>{error}</p>;
+  }
+  if (isLoading) {
+    content = <p>Loading...</p>;
+  }
 
   return (
     <React.Fragment>
@@ -49,7 +61,7 @@ function App() {
       </section>
       <section>
         {content}
-        {error && <button>Stop</button>}
+        {error && <button onClick={stopFetching}>Stop</button>}
       </section>
     </React.Fragment>
   );
