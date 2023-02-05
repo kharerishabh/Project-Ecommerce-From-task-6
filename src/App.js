@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -9,11 +9,11 @@ function App() {
   const [error, setError] = useState(null);
   const [stop, setStop] = useState(null);
 
-  async function fetchMoviesHandler() {
+  const fetchMoviesHandler = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://swapi.dev/api/film/");
+      const response = await fetch("https://swapi.dev/api/films/");
       if (!response.ok) {
         throw new Error("Something went wrong...Retrying");
       }
@@ -26,20 +26,24 @@ function App() {
           releaseDate: moviesData.release_date,
         };
       });
-      console.log("fetching");
       setMovies(transformedMovies);
     } catch (error) {
       setError(error.message);
       const cleanInterval = setInterval(async () => {
-        await fetch("https://swapi.dev/api/film/");
+        await fetch("https://swapi.dev/api/films/");
       }, 5000);
       setStop(cleanInterval);
     }
 
     setIsLoading(false);
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchMoviesHandler()
+  }, [fetchMoviesHandler]);
+
   const stopFetching = () => {
-    console.log('Stopped')
+    console.log('Stopfetching')
     clearInterval(stop);
   };
 
@@ -51,7 +55,7 @@ function App() {
     content = <p>{error}</p>;
   }
   if (isLoading) {
-    content = <p>Loading...</p>;
+    content = <p>Loading... Please Wait</p>;
   }
 
   return (
